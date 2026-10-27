@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ▼ ファビコンの設定 ▼ -->
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    
+    <!-- ▼ Web検索時のタイトルと説明文の設定 ▼ -->
+    <title>シンプル人数カウンター</title>
+    <meta name="description" content="イベントやお店、部活の人数カウントに最適！プラス・マイナス操作で簡単に使えるシンプルな人数計測Webツールです。">
+    
+    <!-- ▼ SNSシェア時のプレビュー表示（OGP）設定 ▼ -->
+    <meta property="og:title" content="シンプル人数カウンター">
+    <meta property="og:description" content="タップで簡単に数えられる！イベントや来客管理に便利なシンプルな人数カウントツールです。">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="シンプル人数カウンター">
+
+    <style>
+        :root {
+            --primary-color: #5065A9;
+            --primary-hover: #5065A9;
+            --primary-active: #3B519F;
+            --danger-color: #D45757;
+            --danger-hover: #D45757;
+            --danger-active: #D25858;
+            --minus-color: #94a3b8;
+            --minus-hover: #94a3b8;
+            --minus-active: #8591A4;
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            /* テキスト選択の防止 */
+            -webkit-user-select: none;
+            user-select: none;
+            /* ★スマホでボタン等をタップした瞬間の青い光（ハイライト）を完全に非表示にする */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            padding: 28px 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        /* カウント表示メイン部分 */
+        .counter-display {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .counter-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .counter-value {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        /* 操作ボタンエリア */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 14px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.08s ease, background-color 0.08s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            -webkit-touch-callout: none;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-plus {
+            background-color: var(--primary-color);
+            grid-column: span 2;
+            font-size: 1.25rem;
+            padding: 16px;
+        }
+
+        .btn-plus:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-plus:active {
+            background-color: var(--primary-active);
+        }
+
+        .btn-minus {
+            background-color: var(--minus-color);
+        }
+
+        .btn-minus:hover {
+            background-color: var(--minus-hover);
+        }
+
+        .btn-minus:active {
+            background-color: var(--minus-active);
+        }
+
+        .btn-reset {
+            background-color: var(--danger-color);
+        }
+
+        .btn-reset:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .btn-reset:active {
+            background-color: var(--danger-active);
+        }
+
+        /* フッターリンク */
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 4px;
+        }
+
+        .footer-links a {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>人数カウンター</h1>
+
+        <div class="counter-display">
+            <span class="counter-label">現在の人数</span>
+            <div class="counter-value" id="counterValue">0</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-plus" onclick="updateCount(1)">＋ 追加</button>
+            <button class="btn btn-minus" onclick="updateCount(-1)">－ 減らす</button>
+            <button class="btn btn-reset" onclick="resetCount()">リセット</button>
+        </div>
+
+        <div class="footer-links">
+            <a href="https://kyoro224.github.io/">開発者について↗</a>
+            <a href="https://kyoro224.github.io/privacy/">プライバシーポリシー↗</a>
+        </div>
+    </div>
+
+    <script>
+        let count = 0;
+        const counterValue = document.getElementById('counterValue');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedCount = localStorage.getItem('peopleCount');
+            if (savedCount !== null) {
+                count = parseInt(savedCount, 10);
+                updateDisplay();
+            }
+        });
+
+        function updateCount(amount) {
+            count += amount;
+            if (count < 0) count = 0;
+            updateDisplay();
+            saveCount();
+        }
+
+        function resetCount() {
+            count = 0;
+            updateDisplay();
+            saveCount();
+        }
+
+        function updateDisplay() {
+            counterValue.textContent = count;
+        }
+
+        function saveCount() {
+            localStorage.setItem('peopleCount', count);
+        }
+    </script>
+</body>
+</html>
